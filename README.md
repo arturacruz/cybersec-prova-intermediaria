@@ -1,6 +1,6 @@
 # Oceania
 
-Extensão Firefox (Manifest V3) desenvolvida para a Avaliação Intermediária de Cibersegurança. O projeto detecta sinais de rastreamento e armazenamento no cliente e apresenta uma pontuação de privacidade para a página atual.
+Extensão para Firefox, desenvolvida em Manifest V3 para a Avaliação Intermediária de Cibersegurança. O projeto detecta sinais de rastreamento e armazenamento no cliente e apresenta uma pontuação de privacidade para a página atual.
 
 ## Funcionalidades implementadas
 
@@ -23,20 +23,20 @@ Extensão Firefox (Manifest V3) desenvolvida para a Avaliação Intermediária d
 
 O Firefox remove extensões temporárias quando é encerrado. Páginas privilegiadas, como `about:addons`, `about:debugging`, o visualizador interno de PDF e a loja de extensões, não permitem a execução normal de content scripts.
 
-O pacote da extensão com `manifest.json` na raiz também está disponível em `dist/oceania-extension-1.1.1.zip`. Como extensões distribuídas fora do modo temporário precisam ser assinadas pelo Firefox, durante o desenvolvimento prefira carregar `src/manifest.json` pelo procedimento acima.
-
 ## Como obter uma medição reproduzível
 
 1. Instale ou recarregue a extensão em `about:debugging`.
 2. Abra uma nova aba com o site que será medido.
-3. Abra o DevTools (`F12`) e a aba **Rede/Network**.
+3. Abra o DevTools (`F12`) e selecione a aba **Rede/Network**.
 4. Ative **Persistir registros/Preserve log**.
 5. Recarregue a página com `Ctrl+Shift+R`.
-6. Aguarde pelo menos dez segundos para storages criados de forma assíncrona.
-7. Abra o popup e clique em **Atualizar análise**.
-8. Tire o print do popup e exporte o HAR pelo painel de rede.
+6. Aguarde pelo menos dez segundos para a criação assíncrona de storages.
+7. Abra o popup e clique em **Refresh analysis**.
+8. Registre o popup e exporte o HAR pelo painel de rede.
 
-Se **Zerar contadores** for usado, a página precisa ser recarregada para que as requisições e os cookies do carregamento sejam observados novamente.
+Se **Reset counters** for utilizado, a página precisa ser recarregada para que as requisições e os cookies do carregamento sejam observados novamente.
+
+Para obter uma medição-base, execute a primeira captura sem o uBlock Origin. Ative-o separadamente apenas para registrar os recursos bloqueados e comparar os resultados.
 
 ## Metodologia da pontuação
 
@@ -50,50 +50,58 @@ Toda página começa com 100 pontos. São aplicados os seguintes descontos:
 | Uso de `sessionStorage` | 5 | 5 | É menos persistente, mas ainda mantém estado durante a sessão. |
 | Uso de `IndexedDB` | 10 | 10 | Permite armazenar volumes maiores e estruturas mais complexas. |
 
-O resultado é limitado ao intervalo de 0 a 100. A classificação visual é: 80 a 100, risco baixo; 50 a 79, risco médio; e 0 a 49, risco alto.
+O resultado é limitado ao intervalo de 0 a 100. A classificação visual é:
 
-A pontuação mede sinais técnicos observáveis, não prova intenção maliciosa. Um domínio terceiro pode ser funcional (CDN, fonte ou pagamento), e um storage pode ser necessário para preferências legítimas. Essa limitação deve ser discutida na comparação com o Blacklight.
+- 80 a 100: risco baixo;
+- 50 a 79: risco médio;
+- 0 a 49: risco alto.
+
+A pontuação mede sinais técnicos observáveis e não prova intenção maliciosa. Um domínio terceiro pode ser funcional, como uma CDN, fonte ou serviço de acessibilidade, e o armazenamento pode ser necessário para preferências legítimas.
 
 ## Estrutura do projeto
 
 ```text
 src/
-├── background/background.js
-├── content/oceania.js
+├── background/
+│   └── background.js
+├── content/
+│   └── oceania.js
 ├── icons/
 ├── popup/
+│   ├── popup.css
+│   ├── popup.html
+│   └── popup.js
 └── manifest.json
 
 docs/
-├── CHECKLIST_CONCEITO_C.md
-├── MODELO_RELATORIO.md
 └── RELATORIO.md
 
 evidencias/
 ├── ddg/
-└── sites-reais/
+├── sites-reais/
+└── VALIDACAO.md
 ```
+
+## Evidências e relatório
+
+As evidências dos testes do DuckDuckGo e das análises da Wikipedia, do gov.br e do Monkeytype estão em `evidencias/`. Cada análise utiliza os resultados do Oceania e, conforme o caso, arquivos HAR, Blacklight e registros do uBlock Origin.
+
+O relatório completo, incluindo a metodologia, a comparação entre ferramentas, as limitações e a conclusão, está em `docs/RELATORIO.md`.
 
 ## Limitações conhecidas
 
 - Cookies `HttpOnly` não aparecem em `document.cookie`; o contador principal usa os cabeçalhos `Set-Cookie` observados no tráfego.
-- Cookies existentes antes do carregamento não entram em "Cookies recebidos".
-- Resultados de storage são agregados por origem; frames que compartilham a mesma origem não são somados em duplicidade.
-- A identificação do domínio registrável usa uma lista reduzida de sufixos comuns (`com.br`, `co.uk` etc.), não a Public Suffix List completa.
+- Cookies existentes antes do carregamento não entram em **Cookies received**.
+- Os resultados de storage são agregados por origem; frames que compartilham a mesma origem não são somados em duplicidade.
+- A identificação do domínio registrável usa uma lista reduzida de sufixos comuns, como `com.br` e `co.uk`, e não uma Public Suffix List completa.
 - `indexedDB.databases()` pode não estar disponível em versões antigas do navegador ou em contextos que bloqueiam acesso ao storage.
-- O protótipo detecta e relata; ele não bloqueia requisições.
+- O protótipo detecta e relata sinais técnicos; ele não bloqueia requisições.
+- O protótipo não intercepta diretamente APIs de Canvas e, portanto, não afirma detectar canvas fingerprinting.
 
-## Validação técnica
+## Validação antes da entrega
 
-```bash
-python -m json.tool src/manifest.json
-node --check src/background/background.js
-node --check src/content/oceania.js
-node --check src/popup/popup.js
-node tests/package.test.js
-node tests/background.test.js
-```
-
-Depois valide o comportamento no Firefox com `docs/CHECKLIST_CONCEITO_C.md`.
-
-As evidências verificadas dos testes DDG, Wikipedia, gov.br e Monkeytype estão em `evidencias/`. O texto completo da análise está em `docs/RELATORIO.md`. Antes da entrega, preencha a identificação, repita as medições no Firefox oficial e exporte o relatório para PDF.
+- carregar a extensão pelo `src/manifest.json` no Firefox oficial;
+- confirmar que o popup abre sem erros em `about:debugging`;
+- conferir se os resultados aparecem após recarregar a página;
+- verificar se os arquivos e imagens referenciados em `docs/RELATORIO.md` estão disponíveis no repositório;
+- preencher a identificação exigida e exportar o relatório final para PDF, caso solicitado.
