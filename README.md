@@ -8,7 +8,7 @@ Extensão Firefox (Manifest V3) desenvolvida para a Avaliação Intermediária d
 - identificação de domínios de terceira parte;
 - contagem de cabeçalhos `Set-Cookie` recebidos durante o carregamento;
 - contagem de cookies não `HttpOnly` visíveis à página;
-- detecção de uso de `localStorage`, `sessionStorage` e `IndexedDB`;
+- detecção de `localStorage`, `sessionStorage` e `IndexedDB`, agregada entre a página principal e iframes;
 - relatório por página em popup;
 - pontuação de privacidade com metodologia explícita.
 
@@ -23,7 +23,7 @@ Extensão Firefox (Manifest V3) desenvolvida para a Avaliação Intermediária d
 
 O Firefox remove extensões temporárias quando é encerrado. Páginas privilegiadas, como `about:addons`, `about:debugging`, o visualizador interno de PDF e a loja de extensões, não permitem a execução normal de content scripts.
 
-O pacote da extensão com `manifest.json` na raiz também está disponível em `dist/oceania-extension-1.0.0.zip`. Como extensões distribuídas fora do modo temporário precisam ser assinadas pelo Firefox, durante o desenvolvimento prefira carregar `src/manifest.json` pelo procedimento acima.
+O pacote da extensão com `manifest.json` na raiz também está disponível em `dist/oceania-extension-1.1.0.zip`. Como extensões distribuídas fora do modo temporário precisam ser assinadas pelo Firefox, durante o desenvolvimento prefira carregar `src/manifest.json` pelo procedimento acima.
 
 ## Como obter uma medição reproduzível
 
@@ -77,6 +77,7 @@ evidencias/
 
 - Cookies `HttpOnly` não aparecem em `document.cookie`; o contador principal usa os cabeçalhos `Set-Cookie` observados no tráfego.
 - Cookies existentes antes do carregamento não entram em "Cookies recebidos".
+- Resultados de storage são agregados por origem; frames que compartilham a mesma origem não são somados em duplicidade.
 - A identificação do domínio registrável usa uma lista reduzida de sufixos comuns (`com.br`, `co.uk` etc.), não a Public Suffix List completa.
 - `indexedDB.databases()` pode não estar disponível em versões antigas do navegador ou em contextos que bloqueiam acesso ao storage.
 - O protótipo detecta e relata; ele não bloqueia requisições.

@@ -13,6 +13,7 @@ const manifest = JSON.parse(
 assert.equal(manifest.manifest_version, 3);
 assert.ok(manifest.action.default_popup);
 assert.ok(manifest.background.scripts.length > 0);
+assert.equal(manifest.content_scripts[0].all_frames, true);
 
 const referencedFiles = [
   ...Object.values(manifest.icons),

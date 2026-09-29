@@ -153,6 +153,12 @@ main { padding: 14px; }
 .domain-panel summary { margin: 0; cursor: pointer; }
 .domain-panel[open] summary { margin-bottom: 8px; }
 
+.storage-note {
+  margin: -3px 0 8px;
+  color: #777;
+  font-size: 9px;
+}
+
 .storage-row {
   display: flex;
   align-items: center;
@@ -161,6 +167,8 @@ main { padding: 14px; }
   border-top: 1px solid #252525;
   font-size: 11px;
 }
+
+.storage-row .signal { font-size: 8px; }
 
 #domain-list {
   max-height: 110px;

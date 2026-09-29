@@ -56,12 +56,50 @@ listeners.headersReceived({
       type: "OCEANIA_STORAGE_REPORT",
       storage: {
         localStorage: { available: true, used: true, itemCount: 1 },
-        sessionStorage: { available: true, used: false, itemCount: 0 },
-        indexedDB: { available: true, used: false, databaseCount: 0 },
+        sessionStorage: { available: true, used: true, itemCount: 2 },
+        indexedDB: { available: true, used: true, databaseCount: 1, names: ["main-db"] },
         readableCookies: 1
       }
     },
-    { tab: { id: 7, url: "https://news.example.com/article" } }
+    {
+      tab: { id: 7, url: "https://news.example.com/article" },
+      frameId: 0,
+      url: "https://news.example.com/article"
+    }
+  );
+
+  await listeners.message(
+    {
+      type: "OCEANIA_STORAGE_REPORT",
+      storage: {
+        localStorage: { available: true, used: true, itemCount: 1 },
+        sessionStorage: { available: true, used: true, itemCount: 1 },
+        indexedDB: { available: true, used: false, databaseCount: 0, names: [] },
+        readableCookies: 2
+      }
+    },
+    {
+      tab: { id: 7, url: "https://news.example.com/article" },
+      frameId: 1,
+      url: "https://good.third-party.invalid/frame"
+    }
+  );
+
+  await listeners.message(
+    {
+      type: "OCEANIA_STORAGE_REPORT",
+      storage: {
+        localStorage: { available: true, used: true, itemCount: 1 },
+        sessionStorage: { available: true, used: true, itemCount: 1 },
+        indexedDB: { available: true, used: false, databaseCount: 0, names: [] },
+        readableCookies: 2
+      }
+    },
+    {
+      tab: { id: 7, url: "https://news.example.com/article" },
+      frameId: 2,
+      url: "https://broken.third-party.invalid/frame"
+    }
   );
 
   const result = await listeners.message(
@@ -74,15 +112,22 @@ listeners.headersReceived({
   assert.deepEqual(Array.from(result.report.thirdPartyDomains), ["tracker.invalid"]);
   assert.equal(result.report.cookiesSetDuringLoad, 2);
   assert.equal(result.report.storage.localStorage.used, true);
-  assert.equal(result.score.value, 86);
+  assert.equal(result.report.storage.localStorage.originCount, 3);
+  assert.equal(result.report.storage.localStorage.itemCount, 3);
+  assert.equal(result.report.storage.sessionStorage.originCount, 3);
+  assert.equal(result.report.storage.sessionStorage.itemCount, 4);
+  assert.equal(result.report.storage.indexedDB.originCount, 1);
+  assert.equal(result.report.storage.indexedDB.databaseCount, 1);
+  assert.equal(result.report.storage.scannedFrameCount, 3);
+  assert.equal(result.score.value, 71);
   assert.deepEqual(
     JSON.parse(JSON.stringify(result.score.deductions)),
     {
       thirdPartyDomains: 2,
       cookiesSetDuringLoad: 2,
       localStorage: 10,
-      sessionStorage: 0,
-      indexedDB: 0
+      sessionStorage: 5,
+      indexedDB: 10
     }
   );
 

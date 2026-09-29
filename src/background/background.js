@@ -44,7 +44,7 @@ function emptyReport(tabId, pageUrl = "") {
     thirdPartyDomains: new Set(),
     cookiesSetDuringLoad: 0,
     cookieDomains: new Set(),
-    storage: null
+    storageFrames: new Map()
   };
 }
 
@@ -61,20 +61,96 @@ function resetReport(tabId, pageUrl) {
   return report;
 }
 
+function aggregateStorage(report) {
+  const origins = new Map();
+
+  for (const frame of report.storageFrames.values()) {
+    const origin = frame.origin || "origem-desconhecida";
+    if (!origins.has(origin)) {
+      origins.set(origin, {
+        localStorage: { available: false, used: false, itemCount: 0 },
+        sessionStorage: { available: false, used: false, itemCount: 0 },
+        indexedDB: { available: false, used: false, databaseCount: 0, names: [] },
+        readableCookies: 0
+      });
+    }
+
+    const originData = origins.get(origin);
+    for (const storageName of ["localStorage", "sessionStorage"]) {
+      const frameStorage = frame.storage?.[storageName];
+      if (!frameStorage) continue;
+      originData[storageName].available ||= frameStorage.available;
+      originData[storageName].used ||= frameStorage.used;
+      originData[storageName].itemCount = Math.max(
+        originData[storageName].itemCount,
+        frameStorage.itemCount || 0
+      );
+    }
+
+    const frameIndexedDB = frame.storage?.indexedDB;
+    if (frameIndexedDB) {
+      originData.indexedDB.available ||= frameIndexedDB.available;
+      originData.indexedDB.used ||= frameIndexedDB.used;
+      originData.indexedDB.databaseCount = Math.max(
+        originData.indexedDB.databaseCount,
+        frameIndexedDB.databaseCount || 0
+      );
+      originData.indexedDB.names = [
+        ...new Set([...originData.indexedDB.names, ...(frameIndexedDB.names || [])])
+      ];
+    }
+
+    originData.readableCookies = Math.max(
+      originData.readableCookies,
+      frame.storage?.readableCookies || 0
+    );
+  }
+
+  const summary = {
+    localStorage: { available: false, used: false, itemCount: 0, originCount: 0 },
+    sessionStorage: { available: false, used: false, itemCount: 0, originCount: 0 },
+    indexedDB: { available: false, used: false, databaseCount: 0, originCount: 0, names: [] },
+    readableCookies: 0,
+    scannedFrameCount: report.storageFrames.size
+  };
+
+  for (const originData of origins.values()) {
+    for (const storageName of ["localStorage", "sessionStorage"]) {
+      summary[storageName].available ||= originData[storageName].available;
+      summary[storageName].used ||= originData[storageName].used;
+      summary[storageName].itemCount += originData[storageName].itemCount;
+      if (originData[storageName].used) summary[storageName].originCount += 1;
+    }
+
+    summary.indexedDB.available ||= originData.indexedDB.available;
+    summary.indexedDB.used ||= originData.indexedDB.used;
+    summary.indexedDB.databaseCount += originData.indexedDB.databaseCount;
+    if (originData.indexedDB.used) summary.indexedDB.originCount += 1;
+    summary.indexedDB.names.push(...originData.indexedDB.names);
+    summary.readableCookies += originData.readableCookies;
+  }
+
+  summary.indexedDB.names = [...new Set(summary.indexedDB.names)];
+  return summary;
+}
+
 function serialise(report) {
   return {
     ...report,
+    storageFrames: undefined,
+    storage: aggregateStorage(report),
     thirdPartyDomains: [...report.thirdPartyDomains].sort(),
     cookieDomains: [...report.cookieDomains].sort()
   };
 }
 
 function calculateScore(report) {
+  const storage = aggregateStorage(report);
   const thirdPartyPenalty = Math.min(40, report.thirdPartyDomains.size * 2);
   const cookiePenalty = Math.min(25, report.cookiesSetDuringLoad);
-  const localStoragePenalty = report.storage?.localStorage?.used ? 10 : 0;
-  const sessionStoragePenalty = report.storage?.sessionStorage?.used ? 5 : 0;
-  const indexedDBPenalty = report.storage?.indexedDB?.used ? 10 : 0;
+  const localStoragePenalty = storage.localStorage.used ? 10 : 0;
+  const sessionStoragePenalty = storage.sessionStorage.used ? 5 : 0;
+  const indexedDBPenalty = storage.indexedDB.used ? 10 : 0;
 
   const deductions = {
     thirdPartyDomains: thirdPartyPenalty,
@@ -147,7 +223,14 @@ browser.runtime.onMessage.addListener((message, sender) => {
       return Promise.resolve({ ok: false });
     }
     const report = getReport(tabId, sender.tab?.url || message.pageUrl || "");
-    report.storage = message.storage;
+    const frameId = sender.frameId ?? message.frameId ?? 0;
+    const frameUrl = sender.url || message.pageUrl || report.pageUrl;
+    report.storageFrames.set(frameId, {
+      frameId,
+      url: frameUrl,
+      origin: hostnameFromUrl(frameUrl),
+      storage: message.storage
+    });
     return Promise.resolve({ ok: true });
   }
 

@@ -24,7 +24,7 @@ function setStatus(text, error = false) {
   elements.status.style.color = error ? "#ff5c5c" : "#999";
 }
 
-function setSignal(element, data, countKey) {
+function setSignal(element, data, countKey, unit) {
   element.className = "signal unknown";
 
   if (!data || !data.available) {
@@ -33,7 +33,10 @@ function setSignal(element, data, countKey) {
   }
 
   const count = data[countKey] || 0;
-  element.textContent = data.used ? `DETECTADO (${count})` : "NÃO DETECTADO";
+  const origins = data.originCount || 0;
+  element.textContent = data.used
+    ? `${origins} ORIGEM${origins === 1 ? "" : "S"} · ${count} ${unit}${count === 1 ? "" : "S"}`
+    : "NÃO DETECTADO";
   element.className = `signal ${data.used ? "yes" : "no"}`;
 }
 
@@ -81,9 +84,9 @@ function render(data) {
   elements.thirdPartyRequests.textContent = report.thirdPartyRequestCount;
   elements.cookieCount.textContent = report.cookiesSetDuringLoad;
   elements.readableCookieCount.textContent = report.storage?.readableCookies ?? 0;
-  setSignal(elements.localStorage, report.storage?.localStorage, "itemCount");
-  setSignal(elements.sessionStorage, report.storage?.sessionStorage, "itemCount");
-  setSignal(elements.indexedDB, report.storage?.indexedDB, "databaseCount");
+  setSignal(elements.localStorage, report.storage?.localStorage, "itemCount", "ITEM");
+  setSignal(elements.sessionStorage, report.storage?.sessionStorage, "itemCount", "ITEM");
+  setSignal(elements.indexedDB, report.storage?.indexedDB, "databaseCount", "BD");
   renderDomains(report.thirdPartyDomains);
   setStatus(`Última atualização: ${new Date().toLocaleTimeString("pt-BR")}`);
 }
