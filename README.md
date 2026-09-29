@@ -67,7 +67,7 @@ src/
 docs/
 ├── CHECKLIST_CONCEITO_C.md
 ├── MODELO_RELATORIO.md
-└── RELATORIO_PARCIAL.md
+└── RELATORIO.md
 
 evidencias/
 ├── ddg/
@@ -96,4 +96,4 @@ node tests/background.test.js
 
 Depois valide o comportamento no Firefox com `docs/CHECKLIST_CONCEITO_C.md`.
 
-As evidências já verificadas e o texto preenchido para os testes DDG e para a Wikipedia estão em `evidencias/` e `docs/RELATORIO_PARCIAL.md`. O relatório permanece parcial até a execução de mais dois sites reais no Firefox.
+As evidências verificadas dos testes DDG, Wikipedia, gov.br e Monkeytype estão em `evidencias/`. O texto completo da análise está em `docs/RELATORIO.md`. Antes da entrega, preencha a identificação, repita as medições no Firefox oficial e exporte o relatório para PDF.

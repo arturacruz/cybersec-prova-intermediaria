@@ -28,20 +28,20 @@ Executar pelo menos Tracker Reporting, Storage Blocking e Fingerprinting/Canvas.
 
 ## Três sites reais
 
-Progresso: Wikipedia capturada e analisada; faltam dois sites. A captura atual identifica Zen 1.22.3b e precisa ser repetida no Firefox para conformidade literal.
+Progresso: Wikipedia, gov.br e Monkeytype foram capturados e analisados. Os HARs identificam Zen 1.22.3b e precisam ser repetidos no Firefox para conformidade literal. Nas capturas de gov.br e Monkeytype, os mecanismos de bloqueio estavam ativos e essa condição está registrada no relatório.
 
 Repetir para cada site sorteado pelo professor:
 
-- [ ] Registrar nome, URL, data/hora, Firefox e sistema operacional.
+- [x] Registrar nome, URL, data/hora, navegador e sistema operacional.
 - [ ] Limpar dados do site ou registrar que a medição usa perfil limpo.
 - [ ] Abrir DevTools > Rede e ativar **Persistir registros**.
 - [ ] Recarregar a página e aguardar dez segundos.
-- [ ] Exportar o HAR para `evidencias/sites-reais/site-N/trafego.har`.
-- [ ] Salvar print do Oceania como `oceania.png`.
-- [ ] Salvar ou capturar o resultado do Blacklight.
-- [ ] Registrar os bloqueios do uBlock Origin.
-- [ ] Aplicar e conferir manualmente o score do Oceania.
-- [ ] Explicar diferenças com base no HAR e no comportamento observado.
+- [x] Exportar o HAR para `evidencias/sites-reais/site-N/trafego.har`.
+- [x] Salvar print do Oceania como `oceania.png`.
+- [x] Salvar ou capturar o resultado do Blacklight.
+- [x] Registrar os bloqueios do uBlock Origin.
+- [x] Aplicar e conferir manualmente o score do Oceania.
+- [x] Explicar diferenças com base no HAR e no comportamento observado.
 
 ## Repositório e relatório
 
@@ -50,6 +50,6 @@ Repetir para cada site sorteado pelo professor:
 - [ ] Enviar o repositório para o Git remoto usado na disciplina.
 - [ ] Substituir todos os campos entre colchetes no modelo de relatório.
 - [x] Inserir os prints DDG e Wikipedia já recebidos, legíveis e legendados.
-- [ ] Anexar os três HARs no repositório.
+- [x] Anexar os três HARs no repositório.
 - [ ] Exportar o relatório final como PDF.
 - [ ] Conferir que o link do repositório está acessível ao professor.
