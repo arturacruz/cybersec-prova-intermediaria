@@ -86,6 +86,8 @@ python -m json.tool src/manifest.json
 node --check src/background/background.js
 node --check src/content/oceania.js
 node --check src/popup/popup.js
+node tests/package.test.js
+node tests/background.test.js
 ```
 
 Depois valide o comportamento no Firefox com `docs/CHECKLIST_CONCEITO_C.md`.
