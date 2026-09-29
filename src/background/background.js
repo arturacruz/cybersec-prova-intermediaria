@@ -141,8 +141,12 @@ browser.runtime.onMessage.addListener((message, sender) => {
     return undefined;
   }
 
-  if (message.type === "OCEANIA_STORAGE_REPORT" && sender.tab) {
-    const report = getReport(sender.tab.id, sender.tab.url);
+  if (message.type === "OCEANIA_STORAGE_REPORT") {
+    const tabId = sender.tab?.id ?? message.tabId;
+    if (!Number.isInteger(tabId)) {
+      return Promise.resolve({ ok: false });
+    }
+    const report = getReport(tabId, sender.tab?.url || message.pageUrl || "");
     report.storage = message.storage;
     return Promise.resolve({ ok: true });
   }
