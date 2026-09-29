@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,77 +11,77 @@
     <div class="eye" aria-hidden="true">●</div>
     <div>
       <h1>Oceania</h1>
-      <p>Segurança é vigilância</p>
+      <p>Security is vigilance</p>
     </div>
   </header>
 
   <main>
-    <section class="score-card" aria-label="Pontuação de privacidade">
+    <section class="score-card" aria-label="Privacy score">
       <div>
-        <span class="eyebrow">Pontuação de privacidade</span>
+        <span class="eyebrow">Privacy score</span>
         <strong id="score">--</strong><span class="score-total">/100</span>
       </div>
-      <span id="risk-badge" class="risk-badge">ANALISANDO</span>
+      <span id="risk-badge" class="risk-badge">ANALYZING</span>
     </section>
 
-    <p id="page-host" class="page-host">Aguardando página...</p>
-    <p id="status-message" class="status-message" role="status">Coletando sinais da aba atual.</p>
+    <p id="page-host" class="page-host">Awaiting page...</p>
+    <p id="status-message" class="status-message" role="status">Collecting data from the current tab.</p>
 
-    <section class="metrics" aria-label="Resumo da análise">
+    <section class="metrics" aria-label="Analysis summary">
       <article class="metric">
-        <span class="metric-label">Domínios terceiros</span>
+        <span class="metric-label">Third-party domains</span>
         <strong id="third-party-count">0</strong>
       </article>
       <article class="metric">
-        <span class="metric-label">Requisições de terceiros</span>
+        <span class="metric-label">Third-party requests</span>
         <strong id="third-party-requests">0</strong>
       </article>
       <article class="metric">
-        <span class="metric-label">Cookies recebidos</span>
+        <span class="metric-label">Received cookies</span>
         <strong id="cookie-count">0</strong>
       </article>
       <article class="metric">
-        <span class="metric-label">Cookies legíveis</span>
+        <span class="metric-label">Readable cookies</span>
         <strong id="readable-cookie-count">0</strong>
       </article>
     </section>
 
     <section class="panel">
-      <h2>Armazenamento HTML5</h2>
-      <p class="storage-note">Agregado entre a página e seus frames</p>
+      <h2>HTML5 Storage</h2>
+      <p class="storage-note">Aggregated across the page and its frames</p>
       <div class="storage-row">
         <span>localStorage</span>
-        <span id="local-storage" class="signal unknown">AGUARDANDO</span>
+        <span id="local-storage" class="signal unknown">AWAITING</span>
       </div>
       <div class="storage-row">
         <span>sessionStorage</span>
-        <span id="session-storage" class="signal unknown">AGUARDANDO</span>
+        <span id="session-storage" class="signal unknown">AWAITING</span>
       </div>
       <div class="storage-row">
         <span>IndexedDB</span>
-        <span id="indexed-db" class="signal unknown">AGUARDANDO</span>
+        <span id="indexed-db" class="signal unknown">AWAITING</span>
       </div>
     </section>
 
     <details class="panel domain-panel">
-      <summary>Domínios de terceiros observados</summary>
+      <summary>Observed third-party domains</summary>
       <ul id="domain-list">
-        <li class="empty">Nenhum domínio detectado.</li>
+        <li class="empty">No domains detected.</li>
       </ul>
     </details>
 
     <section class="panel methodology">
-      <h2>Metodologia</h2>
-      <p>Começa em 100. Descontos: 2 por domínio terceiro (máx. 40), 1 por cookie recebido (máx. 25), 10 por localStorage, 5 por sessionStorage e 10 por IndexedDB.</p>
+      <h2>Methodology</h2>
+      <p>Starts at 100. Deductions: 2 per third-party domain (max. 40), 1 per received cookie (max. 25), 10 for localStorage, 5 for sessionStorage, and 10 for IndexedDB.</p>
     </section>
 
     <div class="actions">
-      <button id="refresh-button" type="button">Atualizar análise</button>
-      <button id="reset-button" type="button" class="secondary">Zerar contadores</button>
+      <button id="refresh-button" type="button">Update analysis</button>
+      <button id="reset-button" type="button" class="secondary">Reset counters</button>
     </div>
   </main>
 
-  <footer>Oceania observa o tráfego</footer>
+  <footer>Oceania observes everything</footer>
   <script src="popup.js"></script>
 </body>
 </html>

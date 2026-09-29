@@ -23,7 +23,7 @@ Extensão Firefox (Manifest V3) desenvolvida para a Avaliação Intermediária d
 
 O Firefox remove extensões temporárias quando é encerrado. Páginas privilegiadas, como `about:addons`, `about:debugging`, o visualizador interno de PDF e a loja de extensões, não permitem a execução normal de content scripts.
 
-O pacote da extensão com `manifest.json` na raiz também está disponível em `dist/oceania-extension-1.1.0.zip`. Como extensões distribuídas fora do modo temporário precisam ser assinadas pelo Firefox, durante o desenvolvimento prefira carregar `src/manifest.json` pelo procedimento acima.
+O pacote da extensão com `manifest.json` na raiz também está disponível em `dist/oceania-extension-1.1.1.zip`. Como extensões distribuídas fora do modo temporário precisam ser assinadas pelo Firefox, durante o desenvolvimento prefira carregar `src/manifest.json` pelo procedimento acima.
 
 ## Como obter uma medição reproduzível
 

@@ -28,31 +28,31 @@ function setSignal(element, data, countKey, unit) {
   element.className = "signal unknown";
 
   if (!data || !data.available) {
-    element.textContent = data?.error ? "INDISPONÍVEL" : "AGUARDANDO";
+    element.textContent = data?.error ? "UNAVAILABLE" : "AWAITING";
     return;
   }
 
   const count = data[countKey] || 0;
   const origins = data.originCount || 0;
   element.textContent = data.used
-    ? `${origins} ORIGEM${origins === 1 ? "" : "S"} · ${count} ${unit}${count === 1 ? "" : "S"}`
-    : "NÃO DETECTADO";
+    ? `${origins} ORIGIN${origins === 1 ? "" : "S"} · ${count} ${unit}${count === 1 ? "" : "S"}`
+    : "NOT DETECTED";
   element.className = `signal ${data.used ? "yes" : "no"}`;
 }
 
 function renderRisk(score) {
-  let label = "ALTO";
+  let label = "HIGH";
   let className = "risk-high";
 
   if (score >= 80) {
-    label = "BAIXO";
+    label = "LOW";
     className = "risk-low";
   } else if (score >= 50) {
-    label = "MÉDIO";
+    label = "MEDIUM";
     className = "risk-medium";
   }
 
-  elements.risk.textContent = `RISCO ${label}`;
+  elements.risk.textContent = `${label} RISK`;
   elements.risk.className = `risk-badge ${className}`;
 }
 
@@ -62,7 +62,7 @@ function renderDomains(domains) {
   if (!domains.length) {
     const item = document.createElement("li");
     item.className = "empty";
-    item.textContent = "Nenhum domínio detectado.";
+    item.textContent = "No domains detected.";
     elements.domainList.append(item);
     return;
   }
@@ -78,7 +78,7 @@ function render(data) {
   const { report, score } = data;
   elements.score.textContent = score.value;
   renderRisk(score.value);
-  elements.host.textContent = report.pageHost || "Página não compatível";
+  elements.host.textContent = report.pageHost || "Incompatible page";
   elements.host.title = report.pageUrl || "";
   elements.thirdPartyCount.textContent = report.thirdPartyDomains.length;
   elements.thirdPartyRequests.textContent = report.thirdPartyRequestCount;
@@ -86,9 +86,9 @@ function render(data) {
   elements.readableCookieCount.textContent = report.storage?.readableCookies ?? 0;
   setSignal(elements.localStorage, report.storage?.localStorage, "itemCount", "ITEM");
   setSignal(elements.sessionStorage, report.storage?.sessionStorage, "itemCount", "ITEM");
-  setSignal(elements.indexedDB, report.storage?.indexedDB, "databaseCount", "BD");
+  setSignal(elements.indexedDB, report.storage?.indexedDB, "databaseCount", "DB");
   renderDomains(report.thirdPartyDomains);
-  setStatus(`Última atualização: ${new Date().toLocaleTimeString("pt-BR")}`);
+  setStatus(`Last update: ${new Date().toLocaleTimeString("en-US")}`);
 }
 
 async function scanStorageInTab() {
@@ -101,12 +101,12 @@ async function scanStorageInTab() {
 
 async function loadReport() {
   elements.refresh.disabled = true;
-  setStatus("Atualizando sinais da página...");
+  setStatus("Updating page data...");
 
   try {
     [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
     if (!activeTab || !/^https?:/.test(activeTab.url || "")) {
-      throw new Error("Abra uma página HTTP ou HTTPS para executar a análise.");
+      throw new Error("Open an HTTP or HTTPS page to start the analysis.");
     }
 
     const storage = await scanStorageInTab();
@@ -143,7 +143,7 @@ async function resetReport() {
     pageUrl: activeTab.url
   });
   render(data);
-  setStatus("Contadores zerados. Recarregue a página para uma medição completa.");
+  setStatus("Counters reset. Reload the page for a full analysis.");
 }
 
 elements.refresh.addEventListener("click", loadReport);

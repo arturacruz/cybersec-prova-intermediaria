@@ -38,5 +38,14 @@ assert.match(popup, /popup\.css/);
 assert.match(popup, /popup\.js/);
 assert.match(popup, /id="score"/);
 assert.match(popup, /id="domain-list"/);
+assert.match(popup, /Privacy score/);
+assert.match(popup, /Aggregated across the page and its frames/);
+
+const popupScript = fs.readFileSync(
+  path.join(sourceRoot, "popup/popup.js"),
+  "utf8"
+);
+assert.match(popupScript, /ORIGIN/);
+assert.match(popupScript, /NOT DETECTED/);
 
 console.log("package.test.js: OK");
