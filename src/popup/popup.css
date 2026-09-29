@@ -9,7 +9,7 @@
 
 body {
   width: 370px;
-  max-height: 590px;
+  max-height: 650px;
   margin: 0;
   overflow-y: auto;
   background:
@@ -169,6 +169,38 @@ main { padding: 14px; }
 }
 
 .storage-row .signal { font-size: 8px; }
+
+.cookie-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.cookie-grid div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 52px;
+  padding: 7px;
+  background: #151515;
+  border-left: 2px solid #740000;
+}
+
+.cookie-grid span {
+  color: #999;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+.cookie-grid strong { font-size: 17px; }
+
+.advanced-details {
+  margin: 8px 0 0;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
 
 #domain-list {
   max-height: 110px;

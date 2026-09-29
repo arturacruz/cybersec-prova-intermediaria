@@ -19,6 +19,7 @@ const referencedFiles = [
   ...Object.values(manifest.icons),
   ...manifest.background.scripts,
   ...manifest.content_scripts.flatMap((entry) => entry.js),
+  ...manifest.web_accessible_resources.flatMap((entry) => entry.resources),
   manifest.action.default_popup,
   ...Object.values(manifest.action.default_icon)
 ];
@@ -40,6 +41,10 @@ assert.match(popup, /id="score"/);
 assert.match(popup, /id="domain-list"/);
 assert.match(popup, /Privacy score/);
 assert.match(popup, /Aggregated across the page and its frames/);
+assert.match(popup, /Received cookie classification/);
+assert.match(popup, /Canvas fingerprint/);
+assert.match(popup, /Bounce tracking/);
+assert.match(popup, /Cookie sync/);
 
 const popupScript = fs.readFileSync(
   path.join(sourceRoot, "popup/popup.js"),
@@ -47,5 +52,7 @@ const popupScript = fs.readFileSync(
 );
 assert.match(popupScript, /ORIGIN/);
 assert.match(popupScript, /NOT DETECTED/);
+assert.match(popupScript, /cookieBreakdown/);
+assert.match(popupScript, /renderAdvancedSignals/);
 
 console.log("package.test.js: OK");

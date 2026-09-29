@@ -9,9 +9,17 @@ const elements = {
   thirdPartyRequests: document.querySelector("#third-party-requests"),
   cookieCount: document.querySelector("#cookie-count"),
   readableCookieCount: document.querySelector("#readable-cookie-count"),
+  cookieFirstSession: document.querySelector("#cookie-first-session"),
+  cookieFirstPersistent: document.querySelector("#cookie-first-persistent"),
+  cookieThirdSession: document.querySelector("#cookie-third-session"),
+  cookieThirdPersistent: document.querySelector("#cookie-third-persistent"),
   localStorage: document.querySelector("#local-storage"),
   sessionStorage: document.querySelector("#session-storage"),
   indexedDB: document.querySelector("#indexed-db"),
+  canvas: document.querySelector("#canvas-signal"),
+  bounce: document.querySelector("#bounce-signal"),
+  cookieSync: document.querySelector("#cookie-sync-signal"),
+  advancedDetails: document.querySelector("#advanced-details"),
   domainList: document.querySelector("#domain-list"),
   refresh: document.querySelector("#refresh-button"),
   reset: document.querySelector("#reset-button")
@@ -74,6 +82,23 @@ function renderDomains(domains) {
   }
 }
 
+function setDetection(element, detected, count = 0) {
+  element.textContent = detected ? `DETECTED · ${count}` : "NOT DETECTED";
+  element.className = `signal ${detected ? "yes" : "no"}`;
+}
+
+function renderAdvancedSignals(report) {
+  setDetection(elements.canvas, report.canvas?.detected, report.canvas?.eventCount || 0);
+  setDetection(elements.bounce, report.bounceTracking?.detected, report.bounceTracking?.eventCount || 0);
+  setDetection(elements.cookieSync, report.cookieSync?.detected, report.cookieSync?.eventCount || 0);
+
+  const details = [];
+  if (report.canvas?.apis?.length) details.push(`Canvas APIs: ${report.canvas.apis.join(", ")}`);
+  if (report.bounceTracking?.domains?.length) details.push(`Bounce domains: ${report.bounceTracking.domains.join(", ")}`);
+  if (report.cookieSync?.domains?.length) details.push(`Sync domains: ${report.cookieSync.domains.join(", ")}`);
+  elements.advancedDetails.textContent = details.join(" · ") || "No advanced signal details yet.";
+}
+
 function render(data) {
   const { report, score } = data;
   elements.score.textContent = score.value;
@@ -84,9 +109,15 @@ function render(data) {
   elements.thirdPartyRequests.textContent = report.thirdPartyRequestCount;
   elements.cookieCount.textContent = report.cookiesSetDuringLoad;
   elements.readableCookieCount.textContent = report.storage?.readableCookies ?? 0;
+  const cookieBreakdown = report.cookieBreakdown || {};
+  elements.cookieFirstSession.textContent = cookieBreakdown.firstParty?.session || 0;
+  elements.cookieFirstPersistent.textContent = cookieBreakdown.firstParty?.persistent || 0;
+  elements.cookieThirdSession.textContent = cookieBreakdown.thirdParty?.session || 0;
+  elements.cookieThirdPersistent.textContent = cookieBreakdown.thirdParty?.persistent || 0;
   setSignal(elements.localStorage, report.storage?.localStorage, "itemCount", "ITEM");
   setSignal(elements.sessionStorage, report.storage?.sessionStorage, "itemCount", "ITEM");
   setSignal(elements.indexedDB, report.storage?.indexedDB, "databaseCount", "DB");
+  renderAdvancedSignals(report);
   renderDomains(report.thirdPartyDomains);
   setStatus(`Last update: ${new Date().toLocaleTimeString("en-US")}`);
 }

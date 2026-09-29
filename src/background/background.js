@@ -33,6 +33,39 @@ function isThirdParty(requestHost, pageHost) {
   return Boolean(requestHost && pageHost && siteKey(requestHost) !== siteKey(pageHost));
 }
 
+const IDENTIFIER_PARAMETER = /^(?:id|uid|uuid|guid|cid|sid|user(?:_?id)?|client(?:_?id)?|visitor(?:_?id)?|device(?:_?id)?|token|click_?id|gclid|fbclid|msclkid|dclid|yclid)$/i;
+
+function cookieKind(headerValue) {
+  const persistent = /(?:^|;)\s*(?:expires|max-age)\s*=/i.test(headerValue || "");
+  return persistent ? "persistent" : "session";
+}
+
+function parseSetCookie(headerValue) {
+  const firstPart = String(headerValue || "").split(";", 1)[0];
+  const separator = firstPart.indexOf("=");
+  if (separator < 1) return null;
+  const name = firstPart.slice(0, separator).trim();
+  const value = firstPart.slice(separator + 1).trim();
+  return name ? { name, value, duration: cookieKind(headerValue) } : null;
+}
+
+function identifierParameters(url) {
+  try {
+    const results = [];
+    for (const [name, value] of new URL(url).searchParams) {
+      const decoded = value.trim();
+      const looksNamed = IDENTIFIER_PARAMETER.test(name);
+      const looksOpaque = decoded.length >= 16 && /[a-z]/i.test(decoded) && /\d/.test(decoded);
+      if ((looksNamed || looksOpaque) && decoded.length >= 6) {
+        results.push({ name, value: decoded });
+      }
+    }
+    return results;
+  } catch (_error) {
+    return [];
+  }
+}
+
 function emptyReport(tabId, pageUrl = "") {
   return {
     tabId,
@@ -44,7 +77,16 @@ function emptyReport(tabId, pageUrl = "") {
     thirdPartyDomains: new Set(),
     cookiesSetDuringLoad: 0,
     cookieDomains: new Set(),
-    storageFrames: new Map()
+    cookieBreakdown: {
+      firstParty: { session: 0, persistent: 0 },
+      thirdParty: { session: 0, persistent: 0 }
+    },
+    cookieValues: new Map(),
+    storageFrames: new Map(),
+    canvas: { detected: false, eventCount: 0, apis: new Set(), frames: new Set() },
+    bounceTracking: { detected: false, eventCount: 0, domains: new Set(), parameters: new Set() },
+    cookieSync: { detected: false, eventCount: 0, domains: new Set(), parameters: new Set() },
+    activeMainRequestId: null
   };
 }
 
@@ -140,7 +182,24 @@ function serialise(report) {
     storageFrames: undefined,
     storage: aggregateStorage(report),
     thirdPartyDomains: [...report.thirdPartyDomains].sort(),
-    cookieDomains: [...report.cookieDomains].sort()
+    cookieDomains: [...report.cookieDomains].sort(),
+    cookieValues: undefined,
+    canvas: {
+      ...report.canvas,
+      apis: [...report.canvas.apis].sort(),
+      frames: report.canvas.frames.size
+    },
+    bounceTracking: {
+      ...report.bounceTracking,
+      domains: [...report.bounceTracking.domains].sort(),
+      parameters: [...report.bounceTracking.parameters].sort()
+    },
+    cookieSync: {
+      ...report.cookieSync,
+      domains: [...report.cookieSync.domains].sort(),
+      parameters: [...report.cookieSync.parameters].sort()
+    },
+    activeMainRequestId: undefined
   };
 }
 
@@ -176,7 +235,14 @@ browser.webRequest.onBeforeRequest.addListener(
     let report;
 
     if (details.type === "main_frame") {
-      report = resetReport(details.tabId, details.url);
+      const current = reports.get(details.tabId);
+      const sameNavigation = Boolean(
+        current && details.requestId && current.activeMainRequestId === details.requestId
+      );
+      report = sameNavigation ? current : resetReport(details.tabId, details.url);
+      report.activeMainRequestId = details.requestId || report.activeMainRequestId;
+      report.pageUrl = details.url;
+      report.pageHost = hostnameFromUrl(details.url);
     } else {
       report = getReport(details.tabId);
     }
@@ -186,7 +252,39 @@ browser.webRequest.onBeforeRequest.addListener(
     if (isThirdParty(requestHost, report.pageHost)) {
       report.thirdPartyRequestCount += 1;
       report.thirdPartyDomains.add(requestHost);
+
+      for (const parameter of identifierParameters(details.url)) {
+        for (const [cookieValue, cookieSource] of report.cookieValues) {
+          if (parameter.value === cookieValue && siteKey(cookieSource) !== siteKey(requestHost)) {
+            report.cookieSync.detected = true;
+            report.cookieSync.eventCount += 1;
+            report.cookieSync.domains.add(requestHost);
+            report.cookieSync.domains.add(cookieSource);
+            report.cookieSync.parameters.add(parameter.name);
+          }
+        }
+      }
     }
+  },
+  { urls: ["<all_urls>"] }
+);
+
+browser.webRequest.onBeforeRedirect.addListener(
+  (details) => {
+    if (details.tabId < 0 || details.type !== "main_frame") return;
+    const report = getReport(details.tabId, details.url);
+    const fromHost = hostnameFromUrl(details.url);
+    const toHost = hostnameFromUrl(details.redirectUrl);
+    if (!fromHost || !toHost || siteKey(fromHost) === siteKey(toHost)) return;
+
+    const parameters = identifierParameters(details.redirectUrl);
+    report.bounceTracking.eventCount += 1;
+    report.bounceTracking.domains.add(fromHost);
+    report.bounceTracking.domains.add(toHost);
+    for (const parameter of parameters) {
+      report.bounceTracking.parameters.add(parameter.name);
+    }
+    report.bounceTracking.detected = parameters.length > 0 || report.bounceTracking.eventCount >= 2;
   },
   { urls: ["<all_urls>"] }
 );
@@ -205,7 +303,17 @@ browser.webRequest.onHeadersReceived.addListener(
 
     report.cookiesSetDuringLoad += setCookieHeaders.length;
     if (setCookieHeaders.length > 0) {
-      report.cookieDomains.add(hostnameFromUrl(details.url));
+      const responseHost = hostnameFromUrl(details.url);
+      const party = isThirdParty(responseHost, report.pageHost) ? "thirdParty" : "firstParty";
+      report.cookieDomains.add(responseHost);
+      for (const header of setCookieHeaders) {
+        const cookie = parseSetCookie(header.value || "");
+        if (!cookie) continue;
+        report.cookieBreakdown[party][cookie.duration] += 1;
+        if (cookie.value.length >= 6) {
+          report.cookieValues.set(cookie.value, responseHost);
+        }
+      }
     }
   },
   { urls: ["<all_urls>"] },
@@ -231,6 +339,19 @@ browser.runtime.onMessage.addListener((message, sender) => {
       origin: hostnameFromUrl(frameUrl),
       storage: message.storage
     });
+    return Promise.resolve({ ok: true });
+  }
+
+  if (message.type === "OCEANIA_PRIVACY_SIGNAL") {
+    const tabId = sender.tab?.id ?? message.tabId;
+    if (!Number.isInteger(tabId)) return Promise.resolve({ ok: false });
+    const report = getReport(tabId, sender.tab?.url || message.pageUrl || "");
+    if (message.signal === "canvas") {
+      report.canvas.detected = true;
+      report.canvas.eventCount += 1;
+      report.canvas.frames.add(sender.frameId ?? message.frameId ?? 0);
+      for (const api of message.apis || []) report.canvas.apis.add(api);
+    }
     return Promise.resolve({ ok: true });
   }
 

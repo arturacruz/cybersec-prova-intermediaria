@@ -47,6 +47,16 @@
     </section>
 
     <section class="panel">
+      <h2>Received cookie classification</h2>
+      <div class="cookie-grid">
+        <div><span>First-party session</span><strong id="cookie-first-session">0</strong></div>
+        <div><span>First-party persistent</span><strong id="cookie-first-persistent">0</strong></div>
+        <div><span>Third-party session</span><strong id="cookie-third-session">0</strong></div>
+        <div><span>Third-party persistent</span><strong id="cookie-third-persistent">0</strong></div>
+      </div>
+    </section>
+
+    <section class="panel">
       <h2>HTML5 Storage</h2>
       <p class="storage-note">Aggregated across the page and its frames</p>
       <div class="storage-row">
@@ -63,6 +73,23 @@
       </div>
     </section>
 
+    <section class="panel">
+      <h2>Advanced privacy signals</h2>
+      <div class="storage-row">
+        <span>Canvas fingerprint</span>
+        <span id="canvas-signal" class="signal unknown">AWAITING</span>
+      </div>
+      <div class="storage-row">
+        <span>Bounce tracking</span>
+        <span id="bounce-signal" class="signal unknown">AWAITING</span>
+      </div>
+      <div class="storage-row">
+        <span>Cookie sync</span>
+        <span id="cookie-sync-signal" class="signal unknown">AWAITING</span>
+      </div>
+      <p id="advanced-details" class="storage-note advanced-details">No advanced signal details yet.</p>
+    </section>
+
     <details class="panel domain-panel">
       <summary>Observed third-party domains</summary>
       <ul id="domain-list">
@@ -72,7 +99,7 @@
 
     <section class="panel methodology">
       <h2>Methodology</h2>
-      <p>Starts at 100. Deductions: 2 per third-party domain (max. 40), 1 per received cookie (max. 25), 10 for localStorage, 5 for sessionStorage, and 10 for IndexedDB.</p>
+      <p>Starts at 100. Deductions: 2 per third-party domain (max. 40), 1 per received cookie (max. 25), 10 for localStorage, 5 for sessionStorage, and 10 for IndexedDB. Advanced signals are reported separately and do not change the score.</p>
     </section>
 
     <div class="actions">

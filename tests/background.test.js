@@ -9,6 +9,7 @@ const listeners = {};
 const browser = {
   webRequest: {
     onBeforeRequest: { addListener(callback) { listeners.beforeRequest = callback; } },
+    onBeforeRedirect: { addListener(callback) { listeners.beforeRedirect = callback; } },
     onHeadersReceived: { addListener(callback) { listeners.headersReceived = callback; } }
   },
   runtime: {
@@ -28,6 +29,7 @@ vm.runInNewContext(source, { browser, URL, Date, Map, Set, Promise });
 listeners.beforeRequest({
   tabId: 7,
   type: "main_frame",
+  requestId: "navigation-1",
   url: "https://news.example.com/article"
 });
 listeners.beforeRequest({
@@ -44,10 +46,30 @@ listeners.headersReceived({
   tabId: 7,
   url: "https://tracker.invalid/collect",
   responseHeaders: [
-    { name: "Set-Cookie", value: "id=1" },
-    { name: "set-cookie", value: "session=2" },
+    { name: "Set-Cookie", value: "id=identifier-12345; Max-Age=3600" },
+    { name: "set-cookie", value: "session=session-abcdef" },
     { name: "Content-Type", value: "text/plain" }
   ]
+});
+listeners.headersReceived({
+  tabId: 7,
+  url: "https://news.example.com/article",
+  responseHeaders: [
+    { name: "Set-Cookie", value: "theme=dark; Expires=Wed, 21 Oct 2030 07:28:00 GMT" },
+    { name: "Set-Cookie", value: "visit=current-session" }
+  ]
+});
+listeners.beforeRequest({
+  tabId: 7,
+  type: "xmlhttprequest",
+  url: "https://sync.invalid/match?uid=identifier-12345"
+});
+listeners.beforeRedirect({
+  tabId: 7,
+  type: "main_frame",
+  requestId: "navigation-1",
+  url: "https://news.example.com/out",
+  redirectUrl: "https://bounce.invalid/continue?uid=visitor-123456"
 });
 
 (async () => {
@@ -65,6 +87,18 @@ listeners.headersReceived({
       tab: { id: 7, url: "https://news.example.com/article" },
       frameId: 0,
       url: "https://news.example.com/article"
+    }
+  );
+
+  await listeners.message(
+    {
+      type: "OCEANIA_PRIVACY_SIGNAL",
+      signal: "canvas",
+      apis: ["canvas.toDataURL"]
+    },
+    {
+      tab: { id: 7, url: "https://news.example.com/article" },
+      frameId: 0
     }
   );
 
@@ -107,10 +141,18 @@ listeners.headersReceived({
     {}
   );
 
-  assert.equal(result.report.requestCount, 3);
-  assert.equal(result.report.thirdPartyRequestCount, 1);
-  assert.deepEqual(Array.from(result.report.thirdPartyDomains), ["tracker.invalid"]);
-  assert.equal(result.report.cookiesSetDuringLoad, 2);
+  assert.equal(result.report.requestCount, 4);
+  assert.equal(result.report.thirdPartyRequestCount, 2);
+  assert.deepEqual(Array.from(result.report.thirdPartyDomains), ["sync.invalid", "tracker.invalid"]);
+  assert.equal(result.report.cookiesSetDuringLoad, 4);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.report.cookieBreakdown)), {
+    firstParty: { session: 1, persistent: 1 },
+    thirdParty: { session: 1, persistent: 1 }
+  });
+  assert.equal(result.report.canvas.detected, true);
+  assert.deepEqual(Array.from(result.report.canvas.apis), ["canvas.toDataURL"]);
+  assert.equal(result.report.bounceTracking.detected, true);
+  assert.equal(result.report.cookieSync.detected, true);
   assert.equal(result.report.storage.localStorage.used, true);
   assert.equal(result.report.storage.localStorage.originCount, 3);
   assert.equal(result.report.storage.localStorage.itemCount, 3);
@@ -119,12 +161,12 @@ listeners.headersReceived({
   assert.equal(result.report.storage.indexedDB.originCount, 1);
   assert.equal(result.report.storage.indexedDB.databaseCount, 1);
   assert.equal(result.report.storage.scannedFrameCount, 3);
-  assert.equal(result.score.value, 71);
+  assert.equal(result.score.value, 67);
   assert.deepEqual(
     JSON.parse(JSON.stringify(result.score.deductions)),
     {
-      thirdPartyDomains: 2,
-      cookiesSetDuringLoad: 2,
+      thirdPartyDomains: 4,
+      cookiesSetDuringLoad: 4,
       localStorage: 10,
       sessionStorage: 5,
       indexedDB: 10

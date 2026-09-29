@@ -1,5 +1,27 @@
 "use strict";
 
+const OCEANIA_CHANNEL = "OCEANIA_PAGE_PRIVACY_SIGNAL_V2";
+
+window.addEventListener("message", (event) => {
+  if (event.source !== window || event.data?.channel !== OCEANIA_CHANNEL) return;
+  if (event.data.signal !== "canvas") return;
+  browser.runtime.sendMessage({
+    type: "OCEANIA_PRIVACY_SIGNAL",
+    signal: "canvas",
+    apis: Array.isArray(event.data.apis) ? event.data.apis.slice(0, 20) : []
+  }).catch(() => {});
+});
+
+function installPageDetector() {
+  const script = document.createElement("script");
+  script.src = browser.runtime.getURL("content/page-detector.js");
+  script.async = false;
+  script.addEventListener("load", () => script.remove(), { once: true });
+  (document.documentElement || document.head).appendChild(script);
+}
+
+installPageDetector();
+
 // Storage belongs to the visited page's origin. The scan is repeated because
 // many applications create storage asynchronously after DOMContentLoaded.
 async function scanStorage() {
