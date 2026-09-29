@@ -19,6 +19,7 @@ const elements = {
   canvas: document.querySelector("#canvas-signal"),
   bounce: document.querySelector("#bounce-signal"),
   cookieSync: document.querySelector("#cookie-sync-signal"),
+  queryTracking: document.querySelector("#query-signal"),
   advancedDetails: document.querySelector("#advanced-details"),
   domainList: document.querySelector("#domain-list"),
   refresh: document.querySelector("#refresh-button"),
@@ -91,11 +92,13 @@ function renderAdvancedSignals(report) {
   setDetection(elements.canvas, report.canvas?.detected, report.canvas?.eventCount || 0);
   setDetection(elements.bounce, report.bounceTracking?.detected, report.bounceTracking?.eventCount || 0);
   setDetection(elements.cookieSync, report.cookieSync?.detected, report.cookieSync?.eventCount || 0);
+  setDetection(elements.queryTracking, report.queryTracking?.detected, report.queryTracking?.eventCount || 0);
 
   const details = [];
   if (report.canvas?.apis?.length) details.push(`Canvas APIs: ${report.canvas.apis.join(", ")}`);
   if (report.bounceTracking?.domains?.length) details.push(`Bounce domains: ${report.bounceTracking.domains.join(", ")}`);
   if (report.cookieSync?.domains?.length) details.push(`Sync domains: ${report.cookieSync.domains.join(", ")}`);
+  if (report.queryTracking?.parameters?.length) details.push(`Tracking parameters: ${report.queryTracking.parameters.join(", ")}`);
   elements.advancedDetails.textContent = details.join(" · ") || "No advanced signal details yet.";
 }
 

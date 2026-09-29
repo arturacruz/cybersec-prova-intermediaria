@@ -45,6 +45,7 @@ assert.match(popup, /Received cookie classification/);
 assert.match(popup, /Canvas fingerprint/);
 assert.match(popup, /Bounce tracking/);
 assert.match(popup, /Cookie sync/);
+assert.match(popup, /Tracking query parameters/);
 
 const popupScript = fs.readFileSync(
   path.join(sourceRoot, "popup/popup.js"),

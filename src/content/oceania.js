@@ -22,6 +22,24 @@ function installPageDetector() {
 
 installPageDetector();
 
+const TRACKING_PARAMETER = /^(?:utm_.+|fbclid|fb_source|gclid|dclid|msclkid|yclid|mc_[ce]id|vero_id|wickedid|oly_anon_id|oly_enc_id|_hsenc|_hsmi)$/i;
+
+document.addEventListener("click", (event) => {
+  const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+  if (!link) return;
+  try {
+    const parameters = [...new URL(link.href, location.href).searchParams.keys()]
+      .filter((name) => TRACKING_PARAMETER.test(name));
+    if (!parameters.length) return;
+    browser.runtime.sendMessage({
+      type: "OCEANIA_QUERY_PARAMETERS",
+      parameters
+    }).catch(() => {});
+  } catch (_error) {
+    // Ignore malformed or non-standard links.
+  }
+}, true);
+
 // Storage belongs to the visited page's origin. The scan is repeated because
 // many applications create storage asynchronously after DOMContentLoaded.
 async function scanStorage() {

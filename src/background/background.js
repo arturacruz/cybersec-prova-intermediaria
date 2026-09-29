@@ -86,6 +86,7 @@ function emptyReport(tabId, pageUrl = "") {
     canvas: { detected: false, eventCount: 0, apis: new Set(), frames: new Set() },
     bounceTracking: { detected: false, eventCount: 0, domains: new Set(), parameters: new Set() },
     cookieSync: { detected: false, eventCount: 0, domains: new Set(), parameters: new Set() },
+    queryTracking: { detected: false, eventCount: 0, parameters: new Set() },
     activeMainRequestId: null
   };
 }
@@ -198,6 +199,10 @@ function serialise(report) {
       ...report.cookieSync,
       domains: [...report.cookieSync.domains].sort(),
       parameters: [...report.cookieSync.parameters].sort()
+    },
+    queryTracking: {
+      ...report.queryTracking,
+      parameters: [...report.queryTracking.parameters].sort()
     },
     activeMainRequestId: undefined
   };
@@ -351,6 +356,19 @@ browser.runtime.onMessage.addListener((message, sender) => {
       report.canvas.eventCount += 1;
       report.canvas.frames.add(sender.frameId ?? message.frameId ?? 0);
       for (const api of message.apis || []) report.canvas.apis.add(api);
+    }
+    return Promise.resolve({ ok: true });
+  }
+
+  if (message.type === "OCEANIA_QUERY_PARAMETERS") {
+    const tabId = sender.tab?.id ?? message.tabId;
+    if (!Number.isInteger(tabId)) return Promise.resolve({ ok: false });
+    const report = getReport(tabId, sender.tab?.url || message.pageUrl || "");
+    const parameters = Array.isArray(message.parameters) ? message.parameters.slice(0, 30) : [];
+    if (parameters.length) {
+      report.queryTracking.detected = true;
+      report.queryTracking.eventCount += 1;
+      for (const name of parameters) report.queryTracking.parameters.add(String(name));
     }
     return Promise.resolve({ ok: true });
   }

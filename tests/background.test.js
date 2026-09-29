@@ -92,6 +92,17 @@ listeners.beforeRedirect({
 
   await listeners.message(
     {
+      type: "OCEANIA_QUERY_PARAMETERS",
+      parameters: ["utm_source", "fbclid"]
+    },
+    {
+      tab: { id: 7, url: "https://news.example.com/article" },
+      frameId: 0
+    }
+  );
+
+  await listeners.message(
+    {
       type: "OCEANIA_PRIVACY_SIGNAL",
       signal: "canvas",
       apis: ["canvas.toDataURL"]
@@ -153,6 +164,8 @@ listeners.beforeRedirect({
   assert.deepEqual(Array.from(result.report.canvas.apis), ["canvas.toDataURL"]);
   assert.equal(result.report.bounceTracking.detected, true);
   assert.equal(result.report.cookieSync.detected, true);
+  assert.equal(result.report.queryTracking.detected, true);
+  assert.deepEqual(Array.from(result.report.queryTracking.parameters), ["fbclid", "utm_source"]);
   assert.equal(result.report.storage.localStorage.used, true);
   assert.equal(result.report.storage.localStorage.originCount, 3);
   assert.equal(result.report.storage.localStorage.itemCount, 3);
