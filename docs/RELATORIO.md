@@ -1,12 +1,9 @@
 # Relatório de execução - Oceania
 
-> Documento preenchido com as evidências coletadas em 28/09/2026. Antes da entrega, substituir os campos de identificação entre colchetes, repetir as medições no Firefox oficial e exportar a versão final para PDF.
-
 ## 1. Identificação e ambiente
 
-- Aluno: [nome completo]
-- Matrícula: [matrícula]
-- Repositório: [URL do repositório]
+- Aluno: Artur Álvares Cruz
+- Repositório: https://github.com/arturacruz/cybersec-prova-intermediaria
 - Extensão: Oceania 1.1.1, Manifest V3
 - Sistema operacional: Windows
 - Navegador registrado no HAR atual: Zen 1.22.3b
