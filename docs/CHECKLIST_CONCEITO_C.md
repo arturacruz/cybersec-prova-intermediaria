@@ -12,6 +12,10 @@
 
 ## DuckDuckGo Privacy Test Pages
 
+- [x] Tracker Reporting capturado e analisado.
+- [x] Storage Blocking capturado e analisado.
+- [x] Fingerprinting/Canvas capturado e analisado.
+
 Executar pelo menos Tracker Reporting, Storage Blocking e Fingerprinting/Canvas. Em cada teste, registrar o esperado pelo DDG, o resultado do Oceania, a explicação da divergência e um print do popup.
 
 1. Recarregar o Oceania em `about:debugging`.
@@ -23,6 +27,8 @@ Executar pelo menos Tracker Reporting, Storage Blocking e Fingerprinting/Canvas.
 7. Preencher a tabela em `docs/MODELO_RELATORIO.md`.
 
 ## Três sites reais
+
+Progresso: Wikipedia capturada e analisada; faltam dois sites. A captura atual identifica Zen 1.22.3b e precisa ser repetida no Firefox para conformidade literal.
 
 Repetir para cada site sorteado pelo professor:
 
@@ -43,7 +49,7 @@ Repetir para cada site sorteado pelo professor:
 - [x] Instruções de carregamento via `about:debugging`.
 - [ ] Enviar o repositório para o Git remoto usado na disciplina.
 - [ ] Substituir todos os campos entre colchetes no modelo de relatório.
-- [ ] Inserir prints legíveis e legendados.
+- [x] Inserir os prints DDG e Wikipedia já recebidos, legíveis e legendados.
 - [ ] Anexar os três HARs no repositório.
 - [ ] Exportar o relatório final como PDF.
 - [ ] Conferir que o link do repositório está acessível ao professor.
