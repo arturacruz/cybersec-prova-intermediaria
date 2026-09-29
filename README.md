@@ -1,6 +1,6 @@
 # Oceania
 
-Extensão Firefox (Manifest V3) desenvolvida para a Avaliação Intermediária de Cibersegurança. O projeto detecta sinais de rastreamento e armazenamento no cliente e apresenta uma pontuação de privacidade para a página atual.
+Extensão Firefox (Manifest V3) desenvolvida para a Avaliação Intermediária de Cibersegurança. A versão 2.0.0 implementa os detectores exigidos até o Conceito B.
 
 ## Funcionalidades implementadas
 
@@ -11,6 +11,9 @@ Extensão Firefox (Manifest V3) desenvolvida para a Avaliação Intermediária d
 - detecção de `localStorage`, `sessionStorage` e `IndexedDB`, agregada entre a página principal e iframes;
 - relatório por página em popup;
 - pontuação de privacidade com metodologia explícita.
+- classificação de cookies recebidos em primeira/terceira parte e sessão/persistentes;
+- detecção de uso de APIs associadas a canvas fingerprinting;
+- detecção heurística de bounce tracking, cookie sync e parâmetros de rastreamento em links.
 
 ## Instalação temporária no Firefox
 
@@ -23,7 +26,7 @@ Extensão Firefox (Manifest V3) desenvolvida para a Avaliação Intermediária d
 
 O Firefox remove extensões temporárias quando é encerrado. Páginas privilegiadas, como `about:addons`, `about:debugging`, o visualizador interno de PDF e a loja de extensões, não permitem a execução normal de content scripts.
 
-O pacote da extensão com `manifest.json` na raiz também está disponível em `dist/oceania-extension-1.1.1.zip`. Como extensões distribuídas fora do modo temporário precisam ser assinadas pelo Firefox, durante o desenvolvimento prefira carregar `src/manifest.json` pelo procedimento acima.
+O pacote da extensão com `manifest.json` na raiz também está disponível em `dist/oceania-extension-2.0.0.zip`. Como extensões distribuídas fora do modo temporário precisam ser assinadas pelo Firefox, durante o desenvolvimento prefira carregar `src/manifest.json` pelo procedimento acima.
 
 ## Como obter uma medição reproduzível
 
@@ -65,6 +68,7 @@ src/
 └── manifest.json
 
 docs/
+├── CONCEITO_B.md
 ├── CHECKLIST_CONCEITO_C.md
 ├── MODELO_RELATORIO.md
 └── RELATORIO.md
@@ -82,6 +86,13 @@ evidencias/
 - A identificação do domínio registrável usa uma lista reduzida de sufixos comuns (`com.br`, `co.uk` etc.), não a Public Suffix List completa.
 - `indexedDB.databases()` pode não estar disponível em versões antigas do navegador ou em contextos que bloqueiam acesso ao storage.
 - O protótipo detecta e relata; ele não bloqueia requisições.
+- A detecção de Canvas informa o uso de APIs de leitura/exportação; ela não prova, isoladamente, intenção de rastrear.
+- Bounce tracking e cookie sync são detectados por redirecionamentos entre sites, parâmetros identificadores e reutilização de valores observados em cookies; técnicas ofuscadas podem não ser detectadas.
+- O protótipo identifica parâmetros de rastreamento clicados, mas não os remove da URL.
+
+## Conceito B
+
+O procedimento de validação, os resultados esperados e o texto-base do relatório estão em `docs/CONCEITO_B.md`. As páginas adicionais do DuckDuckGo devem ser executadas no Firefox oficial para produzir os prints reais da entrega.
 
 ## Validação técnica
 
